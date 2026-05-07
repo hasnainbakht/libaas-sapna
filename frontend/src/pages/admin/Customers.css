@@ -1,0 +1,57 @@
+.admin-placeholder-page {
+    padding: 4rem 2rem;
+    text-align: center;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-content {
+    background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.placeholder-content h1 {
+    font-size: 2rem;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.placeholder-content>p {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+.features-preview {
+    background: #f0f0f7;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.features-preview h3 {
+    color: #667eea;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.features-preview ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.features-preview li {
+    color: #444;
+    padding: 0.5rem 0;
+    font-size: 0.95rem;
+}

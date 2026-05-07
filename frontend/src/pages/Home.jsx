@@ -1,0 +1,259 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import api from '../services/api';
+import { setCart } from '../store/slices/cartSlice';
+import './Home.css';
+import './Shop.css';
+import SearchIcon from '@mui/icons-material/Search';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import StarIcon from '@mui/icons-material/Star';
+import FormatPaintIcon from '@mui/icons-material/FormatPaint';
+import StyleIcon from '@mui/icons-material/Style';
+import SellIcon from '@mui/icons-material/Sell';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import MicIcon from '@mui/icons-material/Mic';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import stitchedImg from '../assets/branding/stitched.jpg';
+import unstitchedImg from '../assets/branding/unstitched.jpg';
+import dupattasImg from '../assets/branding/dupattas.png';
+
+const Home = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      api.get('/cart/')
+        .then((response) => {
+          dispatch(setCart(response.data));
+        })
+        .catch((error) => {
+          console.error('Error loading cart:', error);
+        });
+    }
+  }, [isAuthenticated, dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoadingRecs(true);
+      api.get('/recommendations_users/?limit=8')
+        .then((res) => {
+          setRecommendations(res.data.results || []);
+        })
+        .catch((err) => {
+          console.error("Error fetching recommendations:", err);
+        })
+        .finally(() => {
+          setLoadingRecs(false);
+        });
+    }
+  }, [isAuthenticated]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  return (
+    <div className="home-enterprise">
+      {/* Hero Section */}
+      <section className="hero-modern">
+        <div className="hero-overlay"></div>
+        <div className="container hero-container">
+          <div className="hero-content-box">
+            <div className="hero-badge-premium">
+              <AutoFixHighIcon fontSize="small" sx={{ mr: 1 }} />
+              <span>ADVANCED AI FASHION ENGINE</span>
+            </div>
+            <h1>The New Standard of <span className="text-gold">Elegance</span></h1>
+            <p>Libaas Sapna combines traditional craftsmanship with cutting-edge AI to redefine your wardrobe experience.</p>
+
+            <form onSubmit={handleSearch} className="hero-search-enterprise">
+              <div className="search-wrapper-glass">
+                <SearchIcon className="search-icon-glass" />
+                <input
+                  type="text"
+                  placeholder="Search collections..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className="search-btn-glass">
+                  EXPLORE
+                </button>
+              </div>
+            </form>
+
+            <div className="hero-actions">
+              <Link to="/shop" className="btn-enterprise-primary">
+                VIEW COLLECTION
+              </Link>
+              <Link to="/shop?category=stitched" className="btn-enterprise-outline">
+                NEW ARRIVALS
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recommended Section */}
+      {isAuthenticated && recommendations.length > 0 && (
+        <section className="curated-section">
+          <div className="container">
+            <div className="section-header-modern">
+              <div className="header-left">
+                <span className="subtitle">PERSONALIZED</span>
+                <h2>Curated For You</h2>
+              </div>
+              <Link to="/shop" className="view-all-link">
+                View More <ArrowForwardIcon fontSize="small" />
+              </Link>
+            </div>
+
+            <div className="products-grid-modern">
+              {recommendations.map((product) => (
+                <Link key={product.id} to={`/product/${product.id}`} className="product-card-premium">
+                  <div className="product-image-container">
+                    <img
+                      src={product.image || 'https://via.placeholder.com/400x500'}
+                      alt={product.name}
+                    />
+                    <div className="product-actions-overlay">
+                       <VisibilityIcon />
+                    </div>
+                    {product.recommendation_score && (
+                      <div className="match-score">
+                        {Math.round(product.recommendation_score * 100)}% MATCH
+                      </div>
+                    )}
+                  </div>
+                  <div className="product-info-premium">
+                    <span className="category-label">{product.category}</span>
+                    <h3>{product.name}</h3>
+                    <div className="price-tag">Rs. {product.price.toLocaleString()}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Categories Grid */}
+      <section className="categories-enterprise">
+        <div className="container">
+          <div className="section-header-modern center">
+             <span className="subtitle">COLLECTIONS</span>
+             <h2>Shop By Category</h2>
+          </div>
+          <div className="category-grid-master">
+            <Link to="/shop?category=stitched" className="category-item">
+              <div className="category-bg" style={{ backgroundImage: `url(${stitchedImg})` }}></div>
+              <div className="category-content-overlay">
+                <h3>Stitched</h3>
+                <span>EXPLORE COLLECTION</span>
+              </div>
+            </Link>
+            <Link to="/shop?category=unstitched" className="category-item">
+              <div className="category-bg" style={{ backgroundImage: `url(${unstitchedImg})` }}></div>
+              <div className="category-content-overlay">
+                <h3>Unstitched</h3>
+                <span>EXPLORE COLLECTION</span>
+              </div>
+            </Link>
+            <Link to="/shop?category=dupatta" className="category-item">
+              <div className="category-bg" style={{ backgroundImage: `url(${dupattasImg})` }}></div>
+              <div className="category-content-overlay">
+                <h3>Dupattas</h3>
+                <span>EXPLORE COLLECTION</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Showcase */}
+      <section className="features-modern">
+        <div className="container">
+          <div className="features-grid-enterprise">
+            <div className="feature-item">
+              <div className="feature-icon-box"><MicIcon /></div>
+              <h4>Voice Commands</h4>
+              <p>State-of-the-art Urdu & English voice recognition for hands-free shopping.</p>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon-box"><AutoFixHighIcon /></div>
+              <h4>AI Styling</h4>
+              <p>Neural networks that learn your preferences to provide better recommendations.</p>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon-box"><LocalShippingIcon /></div>
+              <h4>Elite Logistics</h4>
+              <p>Priority white-glove delivery service across all major regions.</p>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon-box"><CreditCardIcon /></div>
+              <h4>Secure Assets</h4>
+              <p>Multi-layered encryption for all financial transactions and data.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials - Refined */}
+      <section className="testimonials-modern">
+        <div className="container">
+          <div className="section-header-modern center">
+             <span className="subtitle">REVIEWS</span>
+             <h2>The Client Perspective</h2>
+          </div>
+          <div className="testimonial-row">
+            {[
+              { name: "Ayesha Khan", city: "Lahore", text: "The voice search feature is revolutionary. Finding traditional wear has never been this intuitive." },
+              { name: "Fatima Ali", city: "Karachi", text: "Exceptional fabric quality paired with a world-class digital experience. Simply unmatched." },
+              { name: "Sara Ahmed", city: "Islamabad", text: "Libaas Sapna has set a new benchmark for Pakistani e-commerce. The AI picks are spot on." }
+            ].map((t, idx) => (
+              <div key={idx} className="testimonial-card-premium">
+                <ChatBubbleOutlineIcon className="quote-icon" />
+                <p>"{t.text}"</p>
+                <div className="author-info">
+                  <strong>{t.name}</strong>
+                  <span>{t.city}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="final-cta-enterprise">
+        <div className="cta-content">
+          <h2>Elevate Your Presence</h2>
+          <p>Join the elite circle of Libaas Sapna customers today.</p>
+          <Link to="/shop" className="btn-cta-gold">
+            GET STARTED <ArrowForwardIcon sx={{ ml: 1 }} />
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default Home;
+
+
+
+

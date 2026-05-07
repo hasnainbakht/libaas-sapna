@@ -1,0 +1,356 @@
+/* ========================================
+   Checkout - Enterprise Masterpiece UI
+   ======================================== */
+
+.checkout-enterprise {
+  padding: 8rem 0;
+  background: #ffffff;
+}
+
+.checkout-header-master {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 4rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #0f172a;
+}
+
+.back-minimal {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: color 0.3s;
+}
+
+.back-minimal:hover {
+  color: #0f172a;
+}
+
+.checkout-header-master h1 {
+  font-family: var(--font-display, serif);
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0;
+  flex: 1;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #10b981;
+  background: #f0fdf4;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+}
+
+.checkout-grid-master {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 6rem;
+}
+
+/* Form Sections */
+.checkout-section {
+  margin-bottom: 4rem;
+}
+
+.section-title-premium {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.step-count {
+  width: 32px;
+  height: 32px;
+  background: #0f172a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.section-title-premium h3 {
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin: 0;
+}
+
+.form-row-modern {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-group-modern label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.form-group-modern input, 
+.form-group-modern select, 
+.form-group-modern textarea {
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-group-modern input:focus {
+  border-color: #fbbf24;
+}
+
+/* Payment Grid */
+.payment-grid-master {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.payment-pill-master {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-pill-master input {
+  display: none;
+}
+
+.payment-pill-master svg {
+  font-size: 2rem;
+  color: #94a3b8;
+}
+
+.payment-pill-master span {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #64748b;
+}
+
+.payment-pill-master.active {
+  border-color: #fbbf24;
+  background: #fffdf2;
+}
+
+.payment-pill-master.active svg, 
+.payment-pill-master.active span {
+  color: #0f172a;
+}
+
+/* Payment Guide */
+.payment-guide-box {
+  background: #f8fafc;
+  padding: 2.5rem;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
+
+.guide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.guide-header h4 {
+  font-size: 0.8rem;
+  font-weight: 900;
+  margin: 0;
+}
+
+.account-pill {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.account-pill strong {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.1rem;
+}
+
+.account-pill button {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.account-holder-name {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.trx-input-group label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+.trx-input-group input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #0f172a;
+  border-radius: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.place-order-master {
+  width: 100%;
+  height: 70px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 2rem;
+}
+
+.place-order-master:hover {
+  background: #fbbf24;
+  color: #000000;
+  transform: translateY(-2px);
+}
+
+/* Sidebar Summary */
+.summary-card-modern {
+  background: #f8fafc;
+  padding: 3rem;
+  border-radius: 12px;
+  position: sticky;
+  top: 120px;
+}
+
+.summary-card-modern h3 {
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin-bottom: 2rem;
+}
+
+.summary-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.summary-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.item-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-main strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.item-main span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.item-price {
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.summary-footer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 2rem;
+}
+
+.footer-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.footer-line.total {
+  font-size: 1.5rem;
+  color: #0f172a;
+  margin-top: 1rem;
+}
+
+.footer-line span:last-child {
+  font-weight: 900;
+}
+
+.free-shipping-note {
+  background: #f0fdf4;
+  color: #10b981;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .checkout-grid-master { grid-template-columns: 1fr; gap: 4rem; }
+}
+
+@media (max-width: 768px) {
+  .checkout-header-master h1 { font-size: 1.8rem; }
+  .form-row-modern { grid-template-columns: 1fr; }
+  .payment-grid-master { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,1 @@
+[YOUR_OPENROUTER_API_KEY] this is openrouter api key key use this specific model nemotron-3-super-120b-a12b:free and then add a functionality of product search user enters roman urdu llm converts it into english find relevcent tags for products and displays the results of product search on search page implement this feature on search bar
