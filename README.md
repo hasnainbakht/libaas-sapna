@@ -1,7 +1,3 @@
-===========================================================
-    LIBAAS SAPNA - PROJECT SETUP GUIDE (WINDOWS)
-===========================================================
-
 Follow these steps to get the project running on your local machine.
 
 -----------------------------------------------------------
@@ -64,6 +60,4 @@ IMPORTANT NOTES:
 - WHATSAPP: To receive WhatsApp notifications, ensure the META_ACCESS_TOKEN in backend/.env is valid and the recipient number is verified in your Meta Developer portal.
 - API KEYS: If you use the search functionality, ensure you add your OpenRouter API key in backend/modelcontext.txt.
 
-===========================================================
-Developed with ❤️ by Libaas Sapna Team
-===========================================================
+
