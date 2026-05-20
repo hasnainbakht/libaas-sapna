@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
+from decouple import config
 from .nlp_processor import nlp_processor
 from products.models import Product
 from products.serializers import ProductListSerializer
@@ -109,6 +110,49 @@ def extract_tags_locally(query: str) -> dict:
     # Remove commas from numbers (5,000 → 5000)
     q = re.sub(r'(\d),(\d{3})', r'\1\2', q)
 
+    # Convert Urdu number words to digits (e.g. پانچ ہزار → 5000)
+    urdu_number_words = {
+        'ایک': '1', 'دو': '2', 'تین': '3', 'چار': '4', 'پانچ': '5',
+        'چھ': '6', 'سات': '7', 'آٹھ': '8', 'نو': '9', 'دس': '10',
+        'گیارہ': '11', 'بارہ': '12', 'تیرہ': '13', 'چودہ': '14', 'پندرہ': '15',
+        'بیس': '20', 'پچیس': '25', 'تیس': '30', 'پینتیس': '35',
+        'چالیس': '40', 'پچاس': '50', 'ساٹھ': '60', 'ستر': '70',
+        'اسی': '80', 'نوے': '90', 'سو': '100',
+    }
+    # Roman Urdu number words
+    roman_number_words = {
+        'ek': '1', 'do': '2', 'teen': '3', 'char': '4', 'paanch': '5', 'panch': '5',
+        'che': '6', 'chhe': '6', 'saat': '7', 'aath': '8', 'nau': '9', 'das': '10',
+        'bees': '20', 'tees': '30', 'chalis': '40', 'pachas': '50',
+        'saath': '60', 'sattar': '70', 'assi': '80', 'nabbe': '90', 'sau': '100',
+    }
+    # Handle "X hazar/ہزار" → X000 and "X lakh/لاکھ" → X00000
+    # Urdu: پانچ ہزار → 5000
+    for word, digit in urdu_number_words.items():
+        pattern_hazar = word + r'\s*ہزار'
+        if re.search(pattern_hazar, q):
+            q = re.sub(pattern_hazar, str(int(digit) * 1000), q)
+        pattern_lakh = word + r'\s*لاکھ'
+        if re.search(pattern_lakh, q):
+            q = re.sub(pattern_lakh, str(int(digit) * 100000), q)
+    # Also replace standalone ہزار (meaning 1000)
+    if 'ہزار' in q and not re.search(r'\d+\s*ہزار', q):
+        q = q.replace('ہزار', '1000')
+    # Roman Urdu: paanch hazar → 5000
+    for word, digit in roman_number_words.items():
+        pattern_hazar = word + r'\s*hazar'
+        if re.search(pattern_hazar, q):
+            q = re.sub(pattern_hazar, str(int(digit) * 1000), q)
+        pattern_lakh = word + r'\s*lakh'
+        if re.search(pattern_lakh, q):
+            q = re.sub(pattern_lakh, str(int(digit) * 100000), q)
+    # Also handle "ڈیڑھ ہزار" (1500) and "اڑھائی ہزار" (2500)
+    q = re.sub(r'ڈیڑھ\s*ہزار', '1500', q)
+    q = re.sub(r'اڑھائی\s*ہزار', '2500', q)
+    q = re.sub(r'derh\s*hazar', '1500', q)
+    q = re.sub(r'adhai\s*hazar', '2500', q)
+    q = re.sub(r'arhai\s*hazar', '2500', q)
+
     # --- GENDER ---
     male_words = ['مردانہ', 'مرد', 'مردوں', 'men', 'male', 'gents', 'mardana', 'mard', 'mardon', 'boys', 'boy']
     female_words = ['زنانہ', 'عورت', 'عورتوں', 'خواتین', 'لڑکی', 'women', 'female', 'ladies', 'lady', 'zanana', 'aurat', 'khawateen', 'larki', 'girls', 'girl']
@@ -124,23 +168,57 @@ def extract_tags_locally(query: str) -> dict:
 
     # --- COLOR ---
     color_map = {
-        # Urdu script
-        'سفید': 'white', 'وائٹ': 'white', 'کالا': 'black', 'بلیک': 'black',
-        'لال': 'red', 'ریڈ': 'red', 'نیلا': 'blue', 'بلو': 'blue',
-        'بھورا': 'brown', 'براؤن': 'brown', 'پیلا': 'yellow',
-        'گلابی': 'pink', 'پنک': 'pink', 'سبز': 'green', 'گرین': 'green',
-        'سلیٹی': 'grey', 'گرے': 'grey', 'جامنی': 'purple', 'مرون': 'maroon',
+        # Urdu script — masculine singular
+        'سفید': 'white', 'وائٹ': 'white',
+        'کالا': 'black', 'بلیک': 'black',
+        'لال': 'red', 'ریڈ': 'red', 'سرخ': 'red',
+        'نیلا': 'blue', 'بلو': 'blue', 'آسمانی': 'blue',
+        'بھورا': 'brown', 'براؤن': 'brown',
+        'پیلا': 'yellow',
+        'گلابی': 'pink', 'پنک': 'pink',
+        'سبز': 'green', 'گرین': 'green', 'ہرا': 'green',
+        'سلیٹی': 'grey', 'گرے': 'grey',
+        'جامنی': 'purple', 'مرون': 'maroon',
         'نیوی': 'navy', 'بیج': 'beige', 'زیتونی': 'olive',
-        # Roman Urdu
-        'safed': 'white', 'white': 'white', 'kala': 'black', 'black': 'black',
-        'laal': 'red', 'red': 'red', 'neela': 'blue', 'blue': 'blue',
-        'bhura': 'brown', 'brown': 'brown', 'peela': 'yellow', 'yellow': 'yellow',
-        'gulabi': 'pink', 'pink': 'pink', 'sabz': 'green', 'hara': 'green', 'green': 'green',
+        'نارنجی': 'orange',
+        # Urdu script — feminine singular (ی ending)
+        'کالی': 'black',
+        'نیلی': 'blue',
+        'بھوری': 'brown',
+        'پیلی': 'yellow',
+        'ہری': 'green',
+        # Urdu script — plural / oblique (ے ending)
+        'کالے': 'black',
+        'نیلے': 'blue',
+        'بھورے': 'brown',
+        'پیلے': 'yellow',
+        'ہرے': 'green',
+        # Roman Urdu — base forms
+        'safed': 'white', 'white': 'white',
+        'kala': 'black', 'black': 'black',
+        'laal': 'red', 'red': 'red', 'surkh': 'red',
+        'neela': 'blue', 'blue': 'blue', 'asmani': 'blue',
+        'bhura': 'brown', 'brown': 'brown',
+        'peela': 'yellow', 'yellow': 'yellow',
+        'gulabi': 'pink', 'pink': 'pink',
+        'sabz': 'green', 'hara': 'green', 'green': 'green',
         'sleti': 'grey', 'grey': 'grey', 'gray': 'grey',
         'jamni': 'purple', 'purple': 'purple', 'maroon': 'maroon',
         'navy': 'navy', 'beige': 'beige', 'olive': 'olive',
         'orange': 'orange', 'narangi': 'orange', 'mustard': 'mustard',
         'teal': 'teal', 'coral': 'coral',
+        # Roman Urdu — feminine variants
+        'kali': 'black',
+        'neeli': 'blue',
+        'bhuri': 'brown',
+        'peeli': 'yellow',
+        'hari': 'green',
+        # Roman Urdu — plural / oblique variants
+        'kalay': 'black', 'kaley': 'black',
+        'neelay': 'blue', 'neley': 'blue', 'neeley': 'blue',
+        'bhuray': 'brown', 'bhurey': 'brown',
+        'peelay': 'yellow', 'peeley': 'yellow',
+        'haray': 'green', 'harey': 'green',
     }
     for word, color_val in color_map.items():
         if word in q or word in q_original:
@@ -162,8 +240,26 @@ def extract_tags_locally(query: str) -> dict:
 
     # --- CATEGORY ---
     cat_map = {
-        'غیر سلا': 'unstitched', 'ان سٹچ': 'unstitched', 'unstitched': 'unstitched',
-        'سلا ہوا': 'stitched', 'سٹچ': 'stitched', 'stitched': 'stitched',
+        # Unstitched - Urdu script (many phonetic variations from voice input)
+        'غیر سلا': 'unstitched', 'ان سٹچ': 'unstitched', 'ان اسپیچ': 'unstitched',
+        'ان سپیچ': 'unstitched', 'ان سٹچڈ': 'unstitched', 'اَن سٹچ': 'unstitched',
+        'اَن سٹچڈ': 'unstitched', 'ان اسٹچ': 'unstitched', 'ان اسٹچڈ': 'unstitched',
+        'غیر سلائی': 'unstitched', 'بغیر سلائی': 'unstitched', 'بغیر سلا': 'unstitched',
+        'تھان': 'unstitched', 'تھانوں': 'unstitched',
+        # Clothes (stitched + unstitched, excludes dupatta/accessories)
+        'کپڑا': 'clothes', 'کپڑے': 'clothes',
+        # Unstitched - Roman Urdu
+        'unstitched': 'unstitched', 'un stitched': 'unstitched', 'unstitch': 'unstitched',
+        'anstitch': 'unstitched', 'unstiched': 'unstitched', 'unspich': 'unstitched',
+        'anspich': 'unstitched', 'an stitch': 'unstitched', 'ghair sila': 'unstitched',
+        'baghair silai': 'unstitched', 'thaan': 'unstitched',
+        'kapra': 'clothes', 'kapray': 'clothes', 'kapre': 'clothes',
+        # Stitched - Urdu script
+        'سلا ہوا': 'stitched', 'سٹچ': 'stitched', 'سٹچڈ': 'stitched',
+        'سلائی شدہ': 'stitched', 'ریڈی میڈ': 'stitched',
+        # Stitched - Roman Urdu
+        'stitched': 'stitched', 'readymade': 'stitched', 'ready made': 'stitched',
+        'sila hua': 'stitched', 'silai shuda': 'stitched',
     }
     for word, cat_val in cat_map.items():
         if word in q or word in q_original:
@@ -244,20 +340,38 @@ class RomanUrduSearchView(APIView):
 
     # Color aliases: maps common Urdu/Roman Urdu color words to DB color values
     COLOR_ALIASES = {
-        # Urdu script
+        # Urdu script — masculine singular
         'لال': ['red', 'maroon', 'coral'],
+        'سرخ': ['red', 'maroon', 'coral'],
         'نیلا': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'آسمانی': ['blue', 'light blue', 'asmani blue'],
         'سفید': ['white', 'off white'],
         'کالا': ['black'],
         'بھورا': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
         'پیلا': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
         'گلابی': ['pink', 'mauve pink', 'coral'],
         'سبز': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
+        'ہرا': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
         'سلیٹی': ['grey', 'light grey'],
         'جامنی': ['purple', 'maroon'],
-        # Roman Urdu
+        'نارنجی': ['burnt orange', 'coral'],
+        # Urdu script — feminine singular (ی ending)
+        'کالی': ['black'],
+        'نیلی': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'بھوری': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
+        'پیلی': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
+        'ہری': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
+        # Urdu script — plural / oblique (ے ending)
+        'کالے': ['black'],
+        'نیلے': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'بھورے': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
+        'پیلے': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
+        'ہرے': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
+        # Roman Urdu — base forms
         'laal': ['red', 'maroon', 'coral'],
+        'surkh': ['red', 'maroon', 'coral'],
         'neela': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'asmani': ['blue', 'light blue', 'asmani blue'],
         'safed': ['white', 'off white'],
         'kala': ['black'],
         'bhura': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
@@ -268,6 +382,23 @@ class RomanUrduSearchView(APIView):
         'sleti': ['grey', 'light grey'],
         'jamni': ['purple', 'maroon'],
         'narangi': ['burnt orange', 'coral'],
+        # Roman Urdu — feminine variants
+        'kali': ['black'],
+        'neeli': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'bhuri': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
+        'peeli': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
+        'hari': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
+        # Roman Urdu — plural / oblique variants
+        'kalay': ['black'], 'kaley': ['black'],
+        'neelay': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'neley': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'neeley': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
+        'bhuray': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
+        'bhurey': ['brown', 'dark brown', 'chocolate brown', 'burnt orange'],
+        'peelay': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
+        'peeley': ['yellow', 'mustard', 'mustard yellow', 'spectra yellow', 'lime yellow', 'light yellow'],
+        'haray': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
+        'harey': ['green', 'sage green', 'light sage green', 'olive', 'light pistachio', 'teal'],
         # English common
         'red': ['red', 'maroon', 'coral'],
         'blue': ['blue', 'navy', 'dark blue', 'teal blue', 'asmani blue', 'light blue', 'teal'],
@@ -463,7 +594,11 @@ GENDER:
 
         # --- CATEGORY FILTERING ---
         if category:
-            queryset = queryset.filter(category__icontains=category)
+            if category == 'clothes':
+                # "کپڑے" = general clothing → include stitched + unstitched, exclude dupatta & accessories
+                queryset = queryset.filter(category__in=['stitched', 'unstitched'])
+            else:
+                queryset = queryset.filter(category__icontains=category)
 
         # --- PRICE FILTERING ---
         if price_min:

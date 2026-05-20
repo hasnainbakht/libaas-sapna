@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, B
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, F
+from django.utils import timezone
+from datetime import timedelta
 from .models import Product, ProductImage, Wishlist
 from .serializers import (
     ProductListSerializer,
@@ -64,6 +66,17 @@ class ProductViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(price__lte=max_price)
 
         return queryset
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def new_arrivals(self, request):
+        """Get products added within the last 7 days"""
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        new_products = Product.objects.filter(
+            is_active=True,
+            created_at__gte=seven_days_ago
+        ).order_by('-created_at')
+        serializer = ProductListSerializer(new_products, many=True)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         """Delete product - soft-delete if it has orders, hard-delete otherwise"""

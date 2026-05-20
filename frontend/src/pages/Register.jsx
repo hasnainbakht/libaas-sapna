@@ -25,6 +25,7 @@ const Register = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -75,7 +76,26 @@ const Register = () => {
     // TLD must be at least 2 characters and only letters
     if (tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
 
+    // Strict TLD check using the provided method
+    const validTlds = ['com', 'org', 'net', 'edu', 'gov', 'io', 'co', 'pk', 'uk', 'in'];
+    if (!validTlds.includes(tld)) {
+      return false;
+    }
+
     return true;
+  };
+
+  // Comprehensive phone validation (Pakistani format)
+  const validatePhone = (phone) => {
+    if (!phone) return true; // Return true if empty, unless it's strictly required
+    
+    // Remove spaces and dashes for checking
+    const cleanPhone = phone.replace(/[\s-]/g, '');
+    
+    // Check for valid Pakistani phone structure (03XX XXXXXXX or +923XX XXXXXXX)
+    const pkPhoneRegex = /^(?:\+92|92|0)?3[0-9]{9}$/;
+    
+    return pkPhoneRegex.test(cleanPhone);
   };
 
   const handleChange = (e) => {
@@ -84,11 +104,20 @@ const Register = () => {
     if (e.target.name === 'email') {
       setEmailError('');
     }
+    if (e.target.name === 'phone') {
+      setPhoneError('');
+    }
   };
 
   const handleEmailBlur = () => {
     if (formData.email && !validateEmail(formData.email)) {
       setEmailError('Please enter a valid email address');
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    if (formData.phone && !validatePhone(formData.phone)) {
+      setPhoneError('Please enter a valid Pakistani phone number (e.g. 03XXXXXXXXX)');
     }
   };
 
@@ -134,6 +163,13 @@ const Register = () => {
     if (!validateEmail(formData.email)) {
       setEmailError('Please enter a valid email address');
       toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate phone before submission
+    if (formData.phone && !validatePhone(formData.phone)) {
+      setPhoneError('Please enter a valid Pakistani phone number (e.g. 03XXXXXXXXX)');
+      toast.error('Please enter a valid phone number');
       return;
     }
 
@@ -315,8 +351,13 @@ const Register = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              onBlur={handlePhoneBlur}
               autoComplete="off"
+              className={phoneError ? 'input-error' : ''}
             />
+            {phoneError && (
+              <span style={{ color: '#e74c3c', fontSize: '0.85rem', marginTop: '4px', display: 'block' }}>{phoneError}</span>
+            )}
           </div>
           <div className="form-group">
             <label>Password</label>

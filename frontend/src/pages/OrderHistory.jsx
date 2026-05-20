@@ -113,7 +113,7 @@ const OrderHistory = () => {
                   </div>
                   <div className="meta-group">
                     <span className="meta-label">DATE PLACED</span>
-                    <span className="meta-value">{new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}</span>
+                    <span className="meta-value">{new Date(order.order_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase()}</span>
                   </div>
                   <div className="meta-group">
                     <span className="meta-label">STATUS</span>

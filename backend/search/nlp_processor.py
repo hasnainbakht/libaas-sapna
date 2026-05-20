@@ -3,11 +3,31 @@ from typing import Dict, Optional
 
 # Urdu/English keyword mappings
 URDU_TO_ENGLISH = {
+    # Colors — masculine singular
     'سفید': 'white',
-    'سیاہ': 'black',
-    'لال': 'red',
-    'نیلا': 'blue',
-    'سبز': 'green',
+    'سیاہ': 'black', 'کالا': 'black',
+    'لال': 'red', 'سرخ': 'red',
+    'نیلا': 'blue', 'آسمانی': 'blue',
+    'سبز': 'green', 'ہرا': 'green',
+    'بھورا': 'brown',
+    'پیلا': 'yellow',
+    'گلابی': 'pink',
+    'سلیٹی': 'grey',
+    'جامنی': 'purple',
+    'نارنجی': 'orange',
+    # Colors — feminine singular
+    'کالی': 'black',
+    'نیلی': 'blue',
+    'بھوری': 'brown',
+    'پیلی': 'yellow',
+    'ہری': 'green',
+    # Colors — plural / oblique
+    'کالے': 'black',
+    'نیلے': 'blue',
+    'بھورے': 'brown',
+    'پیلے': 'yellow',
+    'ہرے': 'green',
+    # Clothing & misc
     'کرتا': 'kurta',
     'شلوار': 'shalwar',
     'قمیض': 'qameez',
@@ -18,11 +38,31 @@ URDU_TO_ENGLISH = {
 
 # Roman Urdu mappings
 ROMAN_URDU_TO_ENGLISH = {
+    # Colors — base
     'safed': 'white',
     'kala': 'black',
-    'laal': 'red',
-    'neela': 'blue',
-    'sabz': 'green',
+    'laal': 'red', 'surkh': 'red',
+    'neela': 'blue', 'asmani': 'blue',
+    'sabz': 'green', 'hara': 'green',
+    'bhura': 'brown',
+    'peela': 'yellow',
+    'gulabi': 'pink',
+    'sleti': 'grey',
+    'jamni': 'purple',
+    'narangi': 'orange',
+    # Colors — feminine
+    'kali': 'black',
+    'neeli': 'blue',
+    'bhuri': 'brown',
+    'peeli': 'yellow',
+    'hari': 'green',
+    # Colors — plural / oblique
+    'kalay': 'black', 'kaley': 'black',
+    'neelay': 'blue', 'neley': 'blue', 'neeley': 'blue',
+    'bhuray': 'brown', 'bhurey': 'brown',
+    'peelay': 'yellow', 'peeley': 'yellow',
+    'haray': 'green', 'harey': 'green',
+    # Clothing & misc
     'kurta': 'kurta',
     'shalwar': 'shalwar',
     'qameez': 'qameez',
@@ -77,6 +117,20 @@ STITCHED_KEYWORDS = {
     'readymade': True,
     'ready': True,
     'unstitch': False,
+    'unstiched': False,
+    'unspich': False,
+    'anspich': False,
+    'anstitch': False,
+    # Urdu script variations
+    'سٹچ': True,
+    'سٹچڈ': True,
+    'سلا ہوا': True,
+    'ریڈی میڈ': True,
+    'ان سٹچ': False,
+    'ان اسپیچ': False,
+    'ان سپیچ': False,
+    'غیر سلا': False,
+    'بغیر سلائی': False,
 }
 
 

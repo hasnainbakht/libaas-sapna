@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { useSettings } from '../../context/SettingsContext';
+import { toast } from 'react-toastify';
 import SearchIcon from '@mui/icons-material/Search';
 import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from '@mui/icons-material/MicOff';
@@ -62,6 +63,7 @@ const Layout = ({ children }) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setHeaderVoiceError('Voice search not supported');
+      toast.error('Voice search is not supported in this browser.');
       return;
     }
     if (headerRecogRef.current) headerRecogRef.current.stop();
@@ -75,6 +77,15 @@ const Layout = ({ children }) => {
       setHeaderListening(false);
       navigate(`/shop?search=${encodeURIComponent(transcript)}&t=${Date.now()}`);
       setHeaderSearch('');
+    };
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed') {
+         toast.error('Microphone access denied. Please allow microphone permissions.');
+      } else {
+         toast.error(`Voice search error: ${event.error}`);
+      }
+      setHeaderListening(false);
     };
     recognition.onend = () => setHeaderListening(false);
     recognition.start();
@@ -170,9 +181,9 @@ const Layout = ({ children }) => {
               <span className="footer-logo-text">{settings.storeName}</span>
               <p>Redefining the boundaries of traditional Pakistani fashion through artificial intelligence and elite craftsmanship.</p>
               <div className="footer-social-master">
-                <a href="#"><InstagramIcon /></a>
-                <a href="#"><FacebookIcon /></a>
-                <a href="#"><TwitterIcon /></a>
+                <a href="https://www.instagram.com/mesum_hn?igsh=MTdmeWpiNjZ4dGptYQ==" target="_blank" rel="noopener noreferrer"><InstagramIcon /></a>
+                <a href="https://www.facebook.com/share/1BrHvY7sas/" target="_blank" rel="noopener noreferrer"><FacebookIcon /></a>
+                <a href="https://x.com/Benaamhnmai" target="_blank" rel="noopener noreferrer"><TwitterIcon /></a>
               </div>
             </div>
             
@@ -187,9 +198,9 @@ const Layout = ({ children }) => {
             <div className="footer-col">
               <h4>CLIENT SERVICE</h4>
               <Link to="/profile">My Account</Link>
-              <Link to="/orders">Order Tracking</Link>
-              <Link to="#">Shipping Policy</Link>
-              <Link to="#">Return Center</Link>
+              <Link to="/orders">Order History</Link>
+              <Link to="/favorites">Favorites</Link>
+              <Link to="/shop">Shop</Link>
             </div>
 
             <div className="footer-col">
@@ -202,12 +213,7 @@ const Layout = ({ children }) => {
 
           <div className="footer-bottom-master">
              <div className="bottom-left">
-                <span>© 2024 LIBAAS SAPNA. ALL RIGHTS RESERVED.</span>
-             </div>
-             <div className="bottom-right">
-                <Link to="#">PRIVACY</Link>
-                <Link to="#">TERMS</Link>
-                <Link to="#">ACCESSIBILITY</Link>
+                <span>© 2026 LIBAAS SAPNA. ALL RIGHTS RESERVED.</span>
              </div>
           </div>
         </div>

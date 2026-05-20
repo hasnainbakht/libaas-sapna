@@ -23,3 +23,14 @@ class Review(models.Model):
         return f"{self.customer.email} - {self.product.name} - {self.rating} stars"
 
 
+class ReviewImage(models.Model):
+    id = models.AutoField(primary_key=True)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='reviews/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'review_images'
+
+    def __str__(self):
+        return f"Image for review #{self.review.review_id}"

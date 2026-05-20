@@ -16,6 +16,9 @@ class Product(models.Model):
         ('unisex', 'Unisex'),
     ]
 
+    # Unstitched fabric: 1 suit = 4 meters
+    METERS_PER_SUIT = 4
+
     product_id = models.AutoField(primary_key=True)
     sku = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=200)
@@ -56,6 +59,14 @@ class Product(models.Model):
         if self.discount > 0:
             return self.price - (self.price * self.discount / 100)
         return self.price
+
+    @property
+    def is_unstitched(self):
+        return self.category == 'unstitched'
+
+    @property
+    def stock_display_unit(self):
+        return 'meters' if self.is_unstitched else 'units'
 
     def update_total_stock(self):
         """Update product total stock based on the sum of all size stocks"""

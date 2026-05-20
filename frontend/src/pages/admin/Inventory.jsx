@@ -162,7 +162,11 @@ const Inventory = () => {
                                                 }
                                             }}
                                         />
-                                        <span>units</span>
+                                        {product.category === 'unstitched' ? (
+                                            <span>meters <em style={{ fontSize: '0.75rem', color: '#64748b' }}>({Math.floor(product.stock_qty / 4)} suits)</em></span>
+                                        ) : (
+                                            <span>units</span>
+                                        )}
                                     </div>
                                 </td>
                                 <td>

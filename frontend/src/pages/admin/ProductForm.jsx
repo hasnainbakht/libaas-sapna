@@ -67,9 +67,11 @@ const ProductForm = () => {
                         file: null
                     }))
                     : [{ image_url: '', is_primary: true, preview: null, file: null }],
-                sizes: product.sizes?.length > 0
-                    ? product.sizes.map(s => ({ size: s.size, stock_qty: s.stock_qty }))
-                    : [{ size: 'S', stock_qty: 0 }],
+                sizes: (product.category === 'unstitched')
+                    ? []
+                    : product.sizes?.length > 0
+                        ? product.sizes.map(s => ({ size: s.size, stock_qty: s.stock_qty }))
+                        : [{ size: 'S', stock_qty: 0 }],
             });
         } catch (error) {
             toast.error('Error fetching product');
@@ -81,7 +83,18 @@ const ProductForm = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const updated = { ...prev, [name]: value };
+            // When switching to unstitched, clear sizes (they're irrelevant)
+            if (name === 'category' && value === 'unstitched') {
+                updated.sizes = [];
+            }
+            // When switching away from unstitched, restore default size row
+            if (name === 'category' && prev.category === 'unstitched' && value !== 'unstitched') {
+                updated.sizes = [{ size: 'S', stock_qty: 0 }];
+            }
+            return updated;
+        });
     };
 
     const handleImageUpload = async (index, file) => {
@@ -185,9 +198,25 @@ const ProductForm = () => {
         setSubmitting(true);
 
         try {
-            const sizeStockSum = formData.sizes.reduce((sum, s) => sum + (parseInt(s.stock_qty) || 0), 0);
-            const hasActiveSizes = formData.sizes.some(s => parseInt(s.stock_qty) > 0) || formData.sizes.length > 1;
-            const finalStockQty = hasActiveSizes ? sizeStockSum : parseInt(formData.stock_qty || 0);
+            const isUnstitched = formData.category === 'unstitched';
+
+            // Unstitched: stock is in meters, no sizes. Use stock_qty directly.
+            // Stitched: sum size stocks if sizes are active.
+            let finalStockQty;
+            let finalSizes;
+
+            if (isUnstitched) {
+                finalStockQty = parseInt(formData.stock_qty || 0);
+                finalSizes = []; // No sizes for unstitched
+            } else {
+                const sizeStockSum = formData.sizes.reduce((sum, s) => sum + (parseInt(s.stock_qty) || 0), 0);
+                const hasActiveSizes = formData.sizes.some(s => parseInt(s.stock_qty) > 0) || formData.sizes.length > 1;
+                finalStockQty = hasActiveSizes ? sizeStockSum : parseInt(formData.stock_qty || 0);
+                finalSizes = formData.sizes.map(s => ({
+                    ...s,
+                    stock_qty: parseInt(s.stock_qty)
+                }));
+            }
 
             const payload = {
                 ...formData,
@@ -196,10 +225,7 @@ const ProductForm = () => {
                 stock_qty: finalStockQty,
                 low_stock_threshold: parseInt(formData.low_stock_threshold),
                 images: formData.images.filter(img => img.image_url.trim() !== ''),
-                sizes: formData.sizes.map(s => ({
-                    ...s,
-                    stock_qty: parseInt(s.stock_qty)
-                })),
+                sizes: finalSizes,
             };
 
             if (isEditMode) {
@@ -394,7 +420,7 @@ const ProductForm = () => {
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Stock Quantity</label>
+                                <label>{formData.category === 'unstitched' ? 'Stock (Meters)' : 'Stock Quantity'}</label>
                                 <input
                                     type="number"
                                     name="stock_qty"
@@ -405,7 +431,7 @@ const ProductForm = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Low Stock Threshold</label>
+                                <label>{formData.category === 'unstitched' ? 'Low Stock Threshold (Meters)' : 'Low Stock Threshold'}</label>
                                 <input
                                     type="number"
                                     name="low_stock_threshold"
@@ -415,6 +441,12 @@ const ProductForm = () => {
                                 />
                             </div>
                         </div>
+
+                        {formData.category === 'unstitched' && (
+                            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                                📐 1 suit requires 4 meters of fabric. Stock is tracked in meters.
+                            </p>
+                        )}
                     </div>
 
                     {/* Images */}
@@ -461,7 +493,8 @@ const ProductForm = () => {
                         </button>
                     </div>
 
-                    {/* Sizes */}
+                    {/* Sizes - hidden for unstitched products */}
+                    {formData.category !== 'unstitched' && (
                     <div className="form-section">
                         <h2>Size Options</h2>
                         {formData.sizes.map((size, index) => (
@@ -496,6 +529,7 @@ const ProductForm = () => {
                             + Add Size
                         </button>
                     </div>
+                    )}
                 </div>
 
                 <div className="form-actions">

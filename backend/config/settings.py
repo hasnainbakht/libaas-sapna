@@ -186,6 +186,10 @@ CORS_ALLOW_HEADERS = [
     'x-admin-phone',
 ]
 
+CORS_EXPOSE_HEADERS = [
+    'content-disposition',
+]
+
 # Redis Configuration
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 

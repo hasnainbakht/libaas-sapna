@@ -7,9 +7,7 @@ import { useSettings } from '../context/SettingsContext';
 import { toast } from 'react-toastify';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import PaymentGateway from '../components/Payment/PaymentGateway';
+
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import './Checkout.css';
@@ -39,7 +37,7 @@ const Checkout = () => {
   ];
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
 
   useEffect(() => {
     if (items.length === 0) {
@@ -103,10 +101,7 @@ const Checkout = () => {
       toast.error(`Please enter your ${getPaymentLabel()} Transaction ID`);
       return;
     }
-    if (formData.payment_method === 'card') {
-      setShowPaymentModal(true);
-      return;
-    }
+
     await placeOrder();
   };
 
@@ -183,11 +178,7 @@ const Checkout = () => {
                   <LocalAtmIcon />
                   <span>CASH ON DELIVERY</span>
                 </label>
-                <label className={`payment-pill-master ${formData.payment_method === 'card' ? 'active' : ''}`}>
-                  <input type="radio" name="payment_method" value="card" checked={formData.payment_method === 'card'} onChange={handleChange} />
-                  <CreditCardIcon />
-                  <span>CREDIT / DEBIT CARD</span>
-                </label>
+
                 <label className={`payment-pill-master ${formData.payment_method === 'easypaisa' ? 'active' : ''}`}>
                   <input type="radio" name="payment_method" value="easypaisa" checked={formData.payment_method === 'easypaisa'} onChange={handleChange} />
                   <PhoneAndroidIcon />
@@ -257,15 +248,7 @@ const Checkout = () => {
         </div>
       </div>
 
-      <PaymentGateway 
-        isOpen={showPaymentModal}
-        amount={grandTotal}
-        onClose={() => setShowPaymentModal(false)}
-        onPaymentSuccess={() => {
-          setShowPaymentModal(false);
-          placeOrder(true);
-        }}
-      />
+
     </div>
   );
 };

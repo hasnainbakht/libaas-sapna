@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from .models import User
 
@@ -7,13 +8,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
 
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="A user with this email already exists.")]
+    )
+    
+    phone = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="A user with this phone number already exists.")]
+    )
+
     class Meta:
         model = User
         fields = ('user_id', 'name', 'email', 'phone', 'role', 'password', 'password2')
         extra_kwargs = {
             'name': {'required': True},
-            'email': {'required': True},
-            'phone': {'required': True, 'allow_blank': False},
         }
 
     def validate(self, attrs):

@@ -19,6 +19,7 @@ import AdminAnalytics from './pages/admin/Analytics';
 import AdminSettings from './pages/admin/Settings';
 import OrderHistory from './pages/OrderHistory';
 import Favorites from './pages/Favorites';
+import NewArrivals from './pages/NewArrivals';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -33,6 +34,7 @@ function App() {
       {/* Public and Customer Routes with Main Layout */}
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/shop" element={<Layout><Shop /></Layout>} />
+      <Route path="/new-arrivals" element={<Layout><NewArrivals /></Layout>} />
       <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
       <Route path="/login" element={<Layout><Login /></Layout>} />
       <Route path="/register" element={<Layout><Register /></Layout>} />

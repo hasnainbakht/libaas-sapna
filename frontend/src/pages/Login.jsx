@@ -17,6 +17,7 @@ const Login = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationEmail, setVerificationEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [loginError, setLoginError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,15 +71,22 @@ const Login = () => {
     // TLD must be at least 2 characters and only letters
     if (tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
 
+    // Strict TLD check using the provided method
+    const validTlds = ['com', 'org', 'net', 'edu', 'gov', 'io', 'co', 'pk', 'uk', 'in'];
+    if (!validTlds.includes(tld)) {
+      return false;
+    }
+
     return true;
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear email error when user starts typing
+    // Clear errors when user starts typing
     if (e.target.name === 'email') {
       setEmailError('');
     }
+    setLoginError('');
   };
 
   const handleEmailBlur = () => {
@@ -135,6 +143,7 @@ const Login = () => {
     }
 
     setLoading(true);
+    setLoginError('');
 
     try {
       const response = await api.post('/auth/login', formData);
@@ -165,7 +174,9 @@ const Login = () => {
         setVerificationEmail(formData.email);
         toast.info('Please verify your email to continue');
       } else {
-        toast.error(error.response?.data?.error || 'Login failed');
+        const errorMsg = error.response?.data?.error || 'Login failed. Please try again.';
+        setLoginError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setLoading(false);
@@ -238,6 +249,16 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-container">
         <h1>Login to LIBAAS SAPNA</h1>
+        {loginError && (
+          <div className="login-error-banner">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span>{loginError}</span>
+          </div>
+        )}
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
             <label>Email</label>

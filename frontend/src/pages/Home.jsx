@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../services/api';
@@ -6,23 +6,17 @@ import { setCart } from '../store/slices/cartSlice';
 import './Home.css';
 import './Shop.css';
 import SearchIcon from '@mui/icons-material/Search';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import CheckroomIcon from '@mui/icons-material/Checkroom';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import StarIcon from '@mui/icons-material/Star';
-import FormatPaintIcon from '@mui/icons-material/FormatPaint';
-import StyleIcon from '@mui/icons-material/Style';
-import SellIcon from '@mui/icons-material/Sell';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import MicIcon from '@mui/icons-material/Mic';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import stitchedImg from '../assets/branding/stitched.jpg';
-import unstitchedImg from '../assets/branding/unstitched.jpg';
-import dupattasImg from '../assets/branding/dupattas.png';
+import stitchedImg from '../assets/branding/stitched.png';
+import unstitchedImg from '../assets/branding/unstitched.webp';
+import dupattasImg from '../assets/branding/dupattas.webp';
+import accessoriesImg from '../assets/branding/accessories.png';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -30,7 +24,36 @@ const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [searchQuery, setSearchQuery] = useState('');
   const [recommendations, setRecommendations] = useState([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
+  const [loadingRecs, setLoadingRecs] = useState(false); // eslint-disable-line no-unused-vars
+  const homeRef = useRef(null);
+
+  // Scroll-reveal animation observer
+  const setupScrollReveal = useCallback(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const el = homeRef.current;
+    if (el) {
+      el.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale').forEach((item) => {
+        observer.observe(item);
+      });
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const cleanup = setupScrollReveal();
+    return cleanup;
+  }, [setupScrollReveal, recommendations]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -68,7 +91,7 @@ const Home = () => {
   };
 
   return (
-    <div className="home-enterprise">
+    <div className="home-enterprise" ref={homeRef}>
       {/* Hero Section */}
       <section className="hero-modern">
         <div className="hero-overlay"></div>
@@ -100,7 +123,7 @@ const Home = () => {
               <Link to="/shop" className="btn-enterprise-primary">
                 VIEW COLLECTION
               </Link>
-              <Link to="/shop?category=stitched" className="btn-enterprise-outline">
+              <Link to="/new-arrivals" className="btn-enterprise-outline">
                 NEW ARRIVALS
               </Link>
             </div>
@@ -112,9 +135,8 @@ const Home = () => {
       {isAuthenticated && recommendations.length > 0 && (
         <section className="curated-section">
           <div className="container">
-            <div className="section-header-modern">
+            <div className="section-header-modern scroll-reveal">
               <div className="header-left">
-                <span className="subtitle">PERSONALIZED</span>
                 <h2>Curated For You</h2>
               </div>
               <Link to="/shop" className="view-all-link">
@@ -135,7 +157,7 @@ const Home = () => {
                     </div>
                     {product.recommendation_score && (
                       <div className="match-score">
-                        {Math.round(product.recommendation_score * 100)}% MATCH
+                        {Math.min(100, Math.round((product.recommendation_score / 8) * 100))}% MATCH
                       </div>
                     )}
                   </div>
@@ -154,29 +176,36 @@ const Home = () => {
       {/* Categories Grid */}
       <section className="categories-enterprise">
         <div className="container">
-          <div className="section-header-modern center">
+          <div className="section-header-modern center scroll-reveal">
              <span className="subtitle">COLLECTIONS</span>
              <h2>Shop By Category</h2>
           </div>
           <div className="category-grid-master">
-            <Link to="/shop?category=stitched" className="category-item">
+            <Link to="/shop?category=stitched" className="category-item scroll-reveal-scale stagger-1">
               <div className="category-bg" style={{ backgroundImage: `url(${stitchedImg})` }}></div>
               <div className="category-content-overlay">
                 <h3>Stitched</h3>
                 <span>EXPLORE COLLECTION</span>
               </div>
             </Link>
-            <Link to="/shop?category=unstitched" className="category-item">
+            <Link to="/shop?category=unstitched" className="category-item scroll-reveal-scale stagger-2">
               <div className="category-bg" style={{ backgroundImage: `url(${unstitchedImg})` }}></div>
               <div className="category-content-overlay">
                 <h3>Unstitched</h3>
                 <span>EXPLORE COLLECTION</span>
               </div>
             </Link>
-            <Link to="/shop?category=dupatta" className="category-item">
+            <Link to="/shop?category=dupatta" className="category-item scroll-reveal-scale stagger-3">
               <div className="category-bg" style={{ backgroundImage: `url(${dupattasImg})` }}></div>
               <div className="category-content-overlay">
                 <h3>Dupattas</h3>
+                <span>EXPLORE COLLECTION</span>
+              </div>
+            </Link>
+            <Link to="/shop?category=accessories" className="category-item scroll-reveal-scale stagger-4">
+              <div className="category-bg" style={{ backgroundImage: `url(${accessoriesImg})` }}></div>
+              <div className="category-content-overlay">
+                <h3>Accessories</h3>
                 <span>EXPLORE COLLECTION</span>
               </div>
             </Link>
@@ -188,22 +217,22 @@ const Home = () => {
       <section className="features-modern">
         <div className="container">
           <div className="features-grid-enterprise">
-            <div className="feature-item">
+            <div className="feature-item scroll-reveal stagger-1">
               <div className="feature-icon-box"><MicIcon /></div>
               <h4>Voice Commands</h4>
               <p>State-of-the-art Urdu & English voice recognition for hands-free shopping.</p>
             </div>
-            <div className="feature-item">
+            <div className="feature-item scroll-reveal stagger-2">
               <div className="feature-icon-box"><AutoFixHighIcon /></div>
               <h4>AI Styling</h4>
               <p>Neural networks that learn your preferences to provide better recommendations.</p>
             </div>
-            <div className="feature-item">
+            <div className="feature-item scroll-reveal stagger-3">
               <div className="feature-icon-box"><LocalShippingIcon /></div>
               <h4>Elite Logistics</h4>
               <p>Priority white-glove delivery service across all major regions.</p>
             </div>
-            <div className="feature-item">
+            <div className="feature-item scroll-reveal stagger-4">
               <div className="feature-icon-box"><CreditCardIcon /></div>
               <h4>Secure Assets</h4>
               <p>Multi-layered encryption for all financial transactions and data.</p>
@@ -215,7 +244,7 @@ const Home = () => {
       {/* Testimonials - Refined */}
       <section className="testimonials-modern">
         <div className="container">
-          <div className="section-header-modern center">
+          <div className="section-header-modern center scroll-reveal">
              <span className="subtitle">REVIEWS</span>
              <h2>The Client Perspective</h2>
           </div>
@@ -225,7 +254,7 @@ const Home = () => {
               { name: "Fatima Ali", city: "Karachi", text: "Exceptional fabric quality paired with a world-class digital experience. Simply unmatched." },
               { name: "Sara Ahmed", city: "Islamabad", text: "Libaas Sapna has set a new benchmark for Pakistani e-commerce. The AI picks are spot on." }
             ].map((t, idx) => (
-              <div key={idx} className="testimonial-card-premium">
+              <div key={idx} className={`testimonial-card-premium scroll-reveal stagger-${idx + 1}`}>
                 <ChatBubbleOutlineIcon className="quote-icon" />
                 <p>"{t.text}"</p>
                 <div className="author-info">
@@ -239,7 +268,7 @@ const Home = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="final-cta-enterprise">
+      <section className="final-cta-enterprise scroll-reveal-scale">
         <div className="cta-content">
           <h2>Elevate Your Presence</h2>
           <p>Join the elite circle of Libaas Sapna customers today.</p>

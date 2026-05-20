@@ -66,11 +66,23 @@ def add_to_cart(request):
     existing_qty = existing_cart_item.quantity if existing_cart_item else 0
     total_requested = existing_qty + quantity
 
-    if total_requested > available_stock:
-        return Response(
-            {'error': f'Insufficient stock. Only {available_stock - existing_qty} more available.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    # Unstitched products: 1 suit = 4 meters
+    if product.category == 'unstitched':
+        from products.models import Product as ProductModel
+        required_stock = total_requested * ProductModel.METERS_PER_SUIT
+        if required_stock > available_stock:
+            suits_available = available_stock // ProductModel.METERS_PER_SUIT
+            remaining = max(0, suits_available - existing_qty)
+            return Response(
+                {'error': f'Insufficient fabric. Only {remaining} more suit(s) can be added ({available_stock} meters available).'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        if total_requested > available_stock:
+            return Response(
+                {'error': f'Insufficient stock. Only {available_stock - existing_qty} more available.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     # Add or update cart item
     if existing_cart_item:
@@ -124,10 +136,21 @@ def update_cart_item(request, cart_id):
             pass
 
     if available_stock < quantity:
-        return Response(
-            {'error': f'Insufficient stock. Only {available_stock} available.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        # Unstitched products: validate in meters
+        if cart_item.product.category == 'unstitched':
+            from products.models import Product as ProductModel
+            required = quantity * ProductModel.METERS_PER_SUIT
+            if available_stock < required:
+                suits_available = available_stock // ProductModel.METERS_PER_SUIT
+                return Response(
+                    {'error': f'Insufficient fabric. Only {suits_available} suit(s) available ({available_stock} meters).'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response(
+                {'error': f'Insufficient stock. Only {available_stock} available.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     cart_item.quantity = quantity
     cart_item.save()

@@ -23,16 +23,8 @@ def register(request):
         # Send Email
         email_sent = False
         try:
-            from django.core.mail import send_mail
-            from django.conf import settings
-            send_mail(
-                'Libaas Sapna - Email Verification',
-                f'Your verification code is: {code}',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-            email_sent = True
+            from .email_service import send_verification_email
+            email_sent = send_verification_email(user, code)
         except Exception as e:
             print(f"Email sending failed: {e}")
             # Continue registration even if message fails
@@ -136,15 +128,8 @@ def resend_verification_code(request):
     
     # Send Email
     try:
-        from django.core.mail import send_mail
-        from django.conf import settings
-        send_mail(
-            'Libaas Sapna - Email Verification',
-            f'Your verification code is: {code}',
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
+        from .email_service import send_verification_email
+        send_verification_email(user, code)
     except Exception as e:
         print(f"Email resend failed: {e}")
     
@@ -259,7 +244,7 @@ def login(request):
         
         if user is None:
             return Response(
-                {'error': 'Invalid credentials'},
+                {'error': 'Incorrect email or password. Please try again.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 

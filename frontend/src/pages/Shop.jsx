@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
+import { toast } from 'react-toastify';
 import './Shop.css';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import MicIcon from '@mui/icons-material/Mic';
@@ -121,6 +122,7 @@ const Shop = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setVoiceError('Voice search not supported');
+      toast.error('Voice search is not supported in this browser.');
       return;
     }
     if (recognitionRef.current) recognitionRef.current.stop();
@@ -134,7 +136,15 @@ const Shop = () => {
       setSearchQuery(transcript);
       triggerAiSearch(transcript);
     };
-    recognition.onerror = () => setIsListening(false);
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed') {
+         toast.error('Microphone access denied. Please allow microphone permissions.');
+      } else {
+         toast.error(`Voice search error: ${event.error}`);
+      }
+      setIsListening(false);
+    };
     recognition.onend = () => setIsListening(false);
     recognition.start();
   };
